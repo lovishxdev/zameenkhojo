@@ -949,11 +949,15 @@ section {
 }
 
 .agent-image img {
-    width: 150px;
-    height: 150px;
+    width: 300px;
+    height: 300px;
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid var(--primary-orange);
+}
+
+#agent-photo {
+    object-position: 45% center;
 }
 
 .agent-badge {
@@ -963,13 +967,13 @@ section {
     /* transform: translateX(-50%); */
     background: var(--gradient-primary);
     color: var(--white);
-    padding: 0.3rem 0.5rem;
+    padding: 0.54rem 0.9rem;
     border-radius: var(--radius-full);
-    font-size: 0.5rem;
+    font-size: 0.9rem;
     font-weight: var(--font-weight-bold);
     display: flex;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-2);
     z-index: 10;
 }
 
@@ -2352,8 +2356,9 @@ section {
     }
 
     .agent-image img {
-        width: 120px;
-        height: 120px;
+        width: 240px;
+        height: 240px;
+        margin-left: -5px;
     }
 
     /* Location Section */
@@ -2755,8 +2760,9 @@ section {
     }
 
     .agent-image img {
-        width: 100px;
-        height: 100px;
+        width: 200px;
+        height: 200px;
+        margin-left: -25px;
     }
 
     .agent-info h3 {
