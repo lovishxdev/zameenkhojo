@@ -997,3 +997,83 @@ const notificationStyles = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = notificationStyles;
 document.head.appendChild(styleSheet);
+
+// Card Rotation Animation
+class FloatingCardRotator {
+    constructor() {
+        this.cards = [
+            {
+                img: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop',
+                title: 'Luxury Villa',
+                price: '₹85 Lakhs'
+            },
+            {
+                img: 'https://images.unsplash.com/photo-1588067444250-50f27842c0b2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1974',
+                title: 'Green Land',
+                price: '₹45 Lakhs'
+            },
+            {
+                img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop',
+                title: 'Commercial Space',
+                price: '₹1.2 Crores'
+            }
+        ];
+        
+        this.currentIndex = 0;
+        this.cardElements = null;
+    }
+
+    init() {
+        this.cardElements = document.querySelectorAll('.floating-card');
+        if (this.cardElements.length === 3) {
+            this.startRotation();
+        }
+    }
+
+    startRotation() {
+        // Rotate every 6 seconds
+        setInterval(() => {
+            this.rotateCards();
+        }, 6000);
+        
+        // Initial rotation
+        setTimeout(() => this.rotateCards(), 2000);
+    }
+
+    rotateCards() {
+        this.currentIndex = (this.currentIndex + 1) % this.cards.length;
+        
+        this.cardElements.forEach((card, index) => {
+            const cardData = this.cards[(this.currentIndex + index) % this.cards.length];
+            const img = card.querySelector('img');
+            const title = card.querySelector('h4');
+            const price = card.querySelector('p');
+            
+            if (img && title && price) {
+                // Create overlay for smooth transition
+                card.style.filter = 'blur(3px)';
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    // Update content while invisible
+                    img.src = cardData.img;
+                    img.alt = cardData.title;
+                    title.textContent = cardData.title;
+                    price.textContent = cardData.price;
+                    
+                    // Fade in smoothly from below
+                    card.style.filter = 'blur(0px)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 1200);
+            }
+        });
+    }
+}
+
+// Initialize card rotation when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const cardRotator = new FloatingCardRotator();
+    cardRotator.init();
+});

@@ -511,7 +511,7 @@ a {
     border-radius: var(--radius-xl);
     overflow: hidden;
     box-shadow: var(--shadow-xl);
-    transition: var(--transition-normal);
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), filter 1.2s ease-in-out;
     cursor: pointer;
     width: 280px;
     height: 200px;
@@ -2577,23 +2577,26 @@ section {
 
     .floating-card {
         width: 150px;
-        height: 120px;
+        height: 170px;
+    }
+
+    .floating-card img {
+        height: 100px;
     }
 
     .card-1 {
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
+        top: 0px;
+        left: 25%;
     }
 
     .card-2 {
         top: 50px;
-        right: 5%;
+        right: 10%;
     }
 
     .card-3 {
-        top: 90px;
-        left: 15%;
+        top: 70px;
+        left: 8%;
     }
 
     .card-info {
