@@ -1,0 +1,1121 @@
+// Admin Panel JavaScript
+class AdminPanel {
+    constructor() {
+        this.isLoggedIn = false;
+        this.currentTab = 'properties';
+        this.properties = [
+            {
+                id: 1,
+                title: "Luxury Villa in Greater Noida",
+                type: "villa",
+                location: "Greater Noida, UP",
+                price: 8500000,
+                bedrooms: 4,
+                bathrooms: 4,
+                sqft: 3200,
+                description: "Stunning luxury villa with modern amenities, spacious rooms, and premium finishes.",
+                amenities: ["Swimming Pool", "Garden", "Parking", "Security", "Modern Kitchen", "Balcony"],
+                images: [
+                    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop",
+                    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop"
+                ],
+                featured: true,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 2,
+                title: "Modern Apartment in Noida",
+                type: "apartment",
+                location: "Noida, UP", 
+                price: 4500000,
+                bedrooms: 3,
+                bathrooms: 2,
+                sqft: 1800,
+                description: "Contemporary apartment with excellent connectivity and modern amenities.",
+                amenities: ["City View", "Gym", "Parking", "Lift", "Security", "Balcony"],
+                images: [
+                    "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop"
+                ],
+                featured: true,
+                createdAt: new Date().toISOString()
+            }
+        ];
+
+        this.contacts = [
+            {
+                id: 1,
+                name: "John Doe",
+                email: "john@example.com",
+                phone: "+91 9876543210",
+                subject: "buying",
+                message: "I'm interested in buying a villa in Greater Noida",
+                status: "new",
+                createdAt: new Date().toISOString()
+            }
+        ];
+
+        this.nextPropertyId = 3;
+        this.nextContactId = 2;
+
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.checkLoginStatus();
+        this.updateStats();
+    }
+
+    setupEventListeners() {
+        // Login form
+        document.getElementById('login-form')?.addEventListener('submit', this.handleLogin.bind(this));
+
+        // Logout button
+        document.getElementById('logout-btn')?.addEventListener('click', this.handleLogout.bind(this));
+
+        // Tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+            });
+        });
+
+        // Add property button
+        document.getElementById('add-property-btn')?.addEventListener('click', () => {
+            this.showPropertyForm();
+        });
+
+        // Property form
+        document.getElementById('property-form')?.addEventListener('submit', this.handlePropertyForm.bind(this));
+
+        // Modal close buttons
+        document.querySelectorAll('.modal-close').forEach(close => {
+            close.addEventListener('click', this.closeModal);
+        });
+
+        // Cancel buttons
+        document.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.addEventListener('click', this.closeModal);
+        });
+
+        // Modal backdrop clicks
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) this.closeModal();
+            });
+        });
+
+        // Search inputs
+        document.getElementById('property-search')?.addEventListener('input', this.handlePropertySearch.bind(this));
+        document.getElementById('contact-search')?.addEventListener('input', this.handleContactSearch.bind(this));
+
+        // Filter selects
+        document.getElementById('property-filter')?.addEventListener('change', this.handlePropertyFilter.bind(this));
+        document.getElementById('contact-status-filter')?.addEventListener('change', this.handleContactFilter.bind(this));
+
+        // Settings form
+        document.getElementById('agent-form')?.addEventListener('submit', this.handleAgentForm.bind(this));
+
+        // Data management buttons
+        document.getElementById('export-data-btn')?.addEventListener('click', this.exportData.bind(this));
+        document.getElementById('backup-data-btn')?.addEventListener('click', this.backupData.bind(this));
+        document.getElementById('import-data-btn')?.addEventListener('click', this.importData.bind(this));
+
+        // Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+            }
+        });
+    }
+
+    checkLoginStatus() {
+        // Check if already logged in (in real app, check session/token)
+        const savedLogin = localStorage.getItem('admin_logged_in');
+        if (savedLogin === 'true') {
+            this.isLoggedIn = true;
+            this.showDashboard();
+        }
+    }
+
+    handleLogin(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Simple authentication (in real app, use proper authentication)
+        if (username === 'admin' && password === 'admin123') {
+            this.isLoggedIn = true;
+            localStorage.setItem('admin_logged_in', 'true');
+            this.showDashboard();
+            this.showNotification('Login successful!', 'success');
+        } else {
+            this.showNotification('Invalid credentials!', 'error');
+        }
+    }
+
+    handleLogout() {
+        this.isLoggedIn = false;
+        localStorage.removeItem('admin_logged_in');
+        document.getElementById('login-section').style.display = 'flex';
+        document.getElementById('admin-dashboard').classList.add('hidden');
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('login-form').reset();
+        this.showNotification('Logged out successfully!', 'success');
+    }
+
+    showDashboard() {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        document.getElementById('logout-btn').style.display = 'flex';
+        this.renderProperties();
+        this.renderContacts();
+        this.renderAnalytics();
+        this.updateStats();
+    }
+
+    switchTab(tabName) {
+        this.currentTab = tabName;
+
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+    }
+
+    showPropertyForm(propertyId = null) {
+        const modal = document.getElementById('property-modal');
+        const form = document.getElementById('property-form');
+        const title = document.getElementById('modal-title');
+
+        if (propertyId) {
+            // Edit mode
+            const property = this.properties.find(p => p.id === propertyId);
+            if (property) {
+                title.textContent = 'Edit Property';
+                form.querySelector('#property-title').value = property.title;
+                form.querySelector('#property-type').value = property.type;
+                form.querySelector('#property-location').value = property.location;
+                form.querySelector('#property-price').value = property.price;
+                form.querySelector('#property-bedrooms').value = property.bedrooms;
+                form.querySelector('#property-bathrooms').value = property.bathrooms;
+                form.querySelector('#property-sqft').value = property.sqft;
+                form.querySelector('#property-featured').checked = property.featured;
+                form.querySelector('#property-description').value = property.description;
+                form.querySelector('#property-images').value = property.images.join('\n');
+                form.querySelector('#property-amenities').value = property.amenities.join(', ');
+                form.querySelector('#property-id').value = property.id;
+            }
+        } else {
+            // Add mode
+            title.textContent = 'Add New Property';
+            form.reset();
+            form.querySelector('#property-id').value = '';
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    handlePropertyForm(e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const propertyData = {
+            title: formData.get('title'),
+            type: formData.get('type'),
+            location: formData.get('location'),
+            price: parseInt(formData.get('price')),
+            bedrooms: parseInt(formData.get('bedrooms')),
+            bathrooms: parseInt(formData.get('bathrooms')),
+            sqft: parseInt(formData.get('sqft')),
+            featured: formData.get('featured') === 'on',
+            description: formData.get('description'),
+            images: formData.get('images').split('\n').filter(img => img.trim()),
+            amenities: formData.get('amenities').split(',').map(a => a.trim()).filter(a => a)
+        };
+
+        const propertyId = formData.get('id');
+
+        if (propertyId) {
+            // Edit existing property
+            const index = this.properties.findIndex(p => p.id === parseInt(propertyId));
+            if (index !== -1) {
+                this.properties[index] = { 
+                    ...this.properties[index], 
+                    ...propertyData,
+                    updatedAt: new Date().toISOString()
+                };
+            }
+            this.showNotification('Property updated successfully!', 'success');
+        } else {
+            // Add new property
+            const newProperty = { 
+                id: this.nextPropertyId++, 
+                ...propertyData,
+                createdAt: new Date().toISOString()
+            };
+            this.properties.push(newProperty);
+            this.showNotification('Property added successfully!', 'success');
+        }
+
+        this.renderProperties();
+        this.updateStats();
+        this.closeModal();
+    }
+
+    renderProperties() {
+        const container = document.getElementById('admin-properties');
+        if (!container) return;
+
+        if (this.properties.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-home"></i>
+                    <h3>No Properties Found</h3>
+                    <p>Start by adding your first property.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = this.properties.map(property => `
+            <div class="admin-property-card">
+                <div class="property-image">
+                    <img src="${property.images[0]}" alt="${property.title}" loading="lazy">
+                    ${property.featured ? '<div class="featured-badge">Featured</div>' : ''}
+                </div>
+                <div class="property-content">
+                    <div class="property-header">
+                        <h3>${property.title}</h3>
+                        <div class="property-price">${this.formatPrice(property.price)}</div>
+                    </div>
+                    <div class="property-meta">
+                        <span class="property-type">${property.type}</span>
+                        <span class="property-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${property.location}
+                        </span>
+                    </div>
+                    <div class="property-details">
+                        ${property.bedrooms > 0 ? `<span><i class="fas fa-bed"></i> ${property.bedrooms}</span>` : ''}
+                        <span><i class="fas fa-bath"></i> ${property.bathrooms}</span>
+                        <span><i class="fas fa-ruler-combined"></i> ${property.sqft} sq ft</span>
+                    </div>
+                    <div class="property-actions">
+                        <button class="btn-icon" onclick="admin.showPropertyForm(${property.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon danger" onclick="admin.deleteProperty(${property.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn-icon" onclick="admin.toggleFeatured(${property.id})" title="Toggle Featured">
+                            <i class="fas fa-star ${property.featured ? 'featured' : ''}"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderContacts() {
+        const container = document.getElementById('admin-contacts');
+        if (!container) return;
+
+        if (this.contacts.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-envelope"></i>
+                    <h3>No Contacts Found</h3>
+                    <p>Contact inquiries will appear here.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = this.contacts.map(contact => `
+            <div class="admin-contact-card">
+                <div class="contact-header">
+                    <div class="contact-info">
+                        <h3>${contact.name}</h3>
+                        <p>${contact.email}</p>
+                        ${contact.phone ? `<p><i class="fas fa-phone"></i> ${contact.phone}</p>` : ''}
+                    </div>
+                    <div class="contact-status">
+                        <select onchange="admin.updateContactStatus(${contact.id}, this.value)" class="status-select ${contact.status}">
+                            <option value="new" ${contact.status === 'new' ? 'selected' : ''}>New</option>
+                            <option value="contacted" ${contact.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                            <option value="closed" ${contact.status === 'closed' ? 'selected' : ''}>Closed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="contact-content">
+                    <div class="contact-subject">
+                        <strong>Subject:</strong> ${this.getSubjectLabel(contact.subject)}
+                    </div>
+                    <div class="contact-message">
+                        <strong>Message:</strong>
+                        <p>${contact.message}</p>
+                    </div>
+                    <div class="contact-date">
+                        <i class="fas fa-clock"></i>
+                        ${this.formatDate(contact.createdAt)}
+                    </div>
+                </div>
+                <div class="contact-actions">
+                    <button class="btn-icon" onclick="admin.replyToContact(${contact.id})" title="Reply via WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                    <button class="btn-icon danger" onclick="admin.deleteContact(${contact.id})" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderAnalytics() {
+        const propertyTypesChart = document.getElementById('property-types-chart');
+        const inquiriesChart = document.getElementById('inquiries-chart');
+        const priceRangeChart = document.getElementById('price-range-chart');
+
+        if (propertyTypesChart) {
+            const types = this.properties.reduce((acc, prop) => {
+                acc[prop.type] = (acc[prop.type] || 0) + 1;
+                return acc;
+            }, {});
+
+            propertyTypesChart.innerHTML = Object.entries(types).map(([type, count]) => `
+                <div class="chart-item">
+                    <span class="chart-label">${type}</span>
+                    <div class="chart-bar">
+                        <div class="chart-fill" style="width: ${(count / this.properties.length) * 100}%"></div>
+                    </div>
+                    <span class="chart-value">${count}</span>
+                </div>
+            `).join('');
+        }
+
+        if (inquiriesChart) {
+            inquiriesChart.innerHTML = `
+                <div class="chart-item">
+                    <span class="chart-label">This Month</span>
+                    <div class="chart-bar">
+                        <div class="chart-fill" style="width: 80%"></div>
+                    </div>
+                    <span class="chart-value">${this.contacts.length}</span>
+                </div>
+            `;
+        }
+
+        if (priceRangeChart) {
+            const ranges = {
+                'Under 50L': this.properties.filter(p => p.price < 5000000).length,
+                '50L - 1Cr': this.properties.filter(p => p.price >= 5000000 && p.price < 10000000).length,
+                'Above 1Cr': this.properties.filter(p => p.price >= 10000000).length
+            };
+
+            priceRangeChart.innerHTML = Object.entries(ranges).map(([range, count]) => `
+                <div class="chart-item">
+                    <span class="chart-label">${range}</span>
+                    <div class="chart-bar">
+                        <div class="chart-fill" style="width: ${(count / this.properties.length) * 100}%"></div>
+                    </div>
+                    <span class="chart-value">${count}</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    updateStats() {
+        document.getElementById('total-properties').textContent = this.properties.length;
+        document.getElementById('featured-count').textContent = this.properties.filter(p => p.featured).length;
+        document.getElementById('total-contacts').textContent = this.contacts.length;
+
+        const totalValue = this.properties.reduce((sum, p) => sum + p.price, 0);
+        document.getElementById('total-value').textContent = this.formatPriceShort(totalValue);
+    }
+
+    deleteProperty(propertyId) {
+        if (confirm('Are you sure you want to delete this property?')) {
+            this.properties = this.properties.filter(p => p.id !== propertyId);
+            this.renderProperties();
+            this.updateStats();
+            this.showNotification('Property deleted successfully!', 'success');
+        }
+    }
+
+    toggleFeatured(propertyId) {
+        const property = this.properties.find(p => p.id === propertyId);
+        if (property) {
+            property.featured = !property.featured;
+            this.renderProperties();
+            this.updateStats();
+            this.showNotification(`Property ${property.featured ? 'added to' : 'removed from'} featured list!`, 'success');
+        }
+    }
+
+    updateContactStatus(contactId, status) {
+        const contact = this.contacts.find(c => c.id === contactId);
+        if (contact) {
+            contact.status = status;
+            contact.updatedAt = new Date().toISOString();
+            this.showNotification('Contact status updated!', 'success');
+        }
+    }
+
+    replyToContact(contactId) {
+        const contact = this.contacts.find(c => c.id === contactId);
+        if (contact) {
+            const message = encodeURIComponent(
+                `Hi ${contact.name}, thank you for your inquiry about ${this.getSubjectLabel(contact.subject)}. I'd be happy to help you with your real estate needs.`
+            );
+            window.open(`https://wa.me/${contact.phone.replace(/[^\d]/g, '')}?text=${message}`, '_blank');
+        }
+    }
+
+    deleteContact(contactId) {
+        if (confirm('Are you sure you want to delete this contact?')) {
+            this.contacts = this.contacts.filter(c => c.id !== contactId);
+            this.renderContacts();
+            this.updateStats();
+            this.showNotification('Contact deleted successfully!', 'success');
+        }
+    }
+
+    handlePropertySearch(e) {
+        const query = e.target.value.toLowerCase();
+        const filteredProperties = this.properties.filter(property => 
+            property.title.toLowerCase().includes(query) ||
+            property.location.toLowerCase().includes(query) ||
+            property.type.toLowerCase().includes(query)
+        );
+        this.renderFilteredProperties(filteredProperties);
+    }
+
+    handlePropertyFilter(e) {
+        const type = e.target.value;
+        const filteredProperties = type ? 
+            this.properties.filter(p => p.type === type) : 
+            this.properties;
+        this.renderFilteredProperties(filteredProperties);
+    }
+
+    renderFilteredProperties(properties) {
+        const container = document.getElementById('admin-properties');
+        if (!container) return;
+
+        // Use the same rendering logic but with filtered properties
+        const originalProperties = this.properties;
+        this.properties = properties;
+        this.renderProperties();
+        this.properties = originalProperties;
+    }
+
+    handleContactSearch(e) {
+        const query = e.target.value.toLowerCase();
+        const filteredContacts = this.contacts.filter(contact => 
+            contact.name.toLowerCase().includes(query) ||
+            contact.email.toLowerCase().includes(query) ||
+            contact.message.toLowerCase().includes(query)
+        );
+        this.renderFilteredContacts(filteredContacts);
+    }
+
+    handleContactFilter(e) {
+        const status = e.target.value;
+        const filteredContacts = status ? 
+            this.contacts.filter(c => c.status === status) : 
+            this.contacts;
+        this.renderFilteredContacts(filteredContacts);
+    }
+
+    renderFilteredContacts(contacts) {
+        const container = document.getElementById('admin-contacts');
+        if (!container) return;
+
+        const originalContacts = this.contacts;
+        this.contacts = contacts;
+        this.renderContacts();
+        this.contacts = originalContacts;
+    }
+
+    handleAgentForm(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        // In real app, save to database
+        this.showNotification('Agent information updated successfully!', 'success');
+    }
+
+    exportData() {
+        const data = {
+            properties: this.properties,
+            contacts: this.contacts,
+            exportDate: new Date().toISOString()
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `zameen-khojo-data-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        this.showNotification('Data exported successfully!', 'success');
+    }
+
+    backupData() {
+        const backup = {
+            properties: this.properties,
+            contacts: this.contacts,
+            version: '1.0',
+            backupDate: new Date().toISOString()
+        };
+
+        localStorage.setItem('zameen_khojo_backup', JSON.stringify(backup));
+        this.showNotification('Data backed up locally!', 'success');
+    }
+
+    importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.properties) {
+                            this.properties = data.properties;
+                            this.nextPropertyId = Math.max(...this.properties.map(p => p.id)) + 1;
+                        }
+                        if (data.contacts) {
+                            this.contacts = data.contacts;
+                            this.nextContactId = Math.max(...this.contacts.map(c => c.id)) + 1;
+                        }
+
+                        this.renderProperties();
+                        this.renderContacts();
+                        this.updateStats();
+                        this.showNotification('Data imported successfully!', 'success');
+                    } catch (error) {
+                        this.showNotification('Invalid file format!', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+
+        input.click();
+    }
+
+    closeModal() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `admin-notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()">&times;</button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+
+    getSubjectLabel(subject) {
+        const subjects = {
+            buying: 'Buying Property',
+            selling: 'Selling Property',
+            renting: 'Renting Property',
+            investment: 'Investment Consultation',
+            general: 'General Inquiry'
+        };
+        return subjects[subject] || subject;
+    }
+
+    formatPrice(price) {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(price);
+    }
+
+    formatPriceShort(price) {
+        if (price >= 10000000) { // 1 Crore or more
+            const crores = price / 10000000;
+            return `₹${crores.toFixed(1)} Cr`;
+        } else if (price >= 100000) { // 1 Lakh or more
+            const lakhs = price / 100000;
+            return `₹${lakhs.toFixed(0)} L`;
+        } else {
+            const thousands = price / 1000;
+            return `₹${thousands.toFixed(0)}K`;
+        }
+    }
+
+    formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+}
+
+// Initialize admin panel
+let admin;
+document.addEventListener('DOMContentLoaded', () => {
+    admin = new AdminPanel();
+});
+
+// Add admin-specific styles
+const adminStyles = `
+    .admin-property-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.2s ease;
+    }
+
+    .admin-property-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .property-image {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .property-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .featured-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: #FF8C00;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .property-content {
+        padding: 20px;
+    }
+
+    .property-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .property-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #1C1C1C;
+    }
+
+    .property-price {
+        color: #FF8C00;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .property-meta {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #6C757D;
+    }
+
+    .property-type {
+        background: #E9ECEF;
+        padding: 2px 8px;
+        border-radius: 4px;
+        text-transform: capitalize;
+    }
+
+    .property-details {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        color: #6C757D;
+    }
+
+    .property-details i {
+        color: #FF8C00;
+        margin-right: 4px;
+    }
+
+    .property-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .btn-icon {
+        background: none;
+        border: 2px solid #E9ECEF;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        color: #6C757D;
+    }
+
+    .btn-icon:hover {
+        border-color: #FF8C00;
+        color: #FF8C00;
+        background: rgba(255, 140, 0, 0.1);
+    }
+
+    .btn-icon.danger:hover {
+        border-color: #DC3545;
+        color: #DC3545;
+        background: rgba(220, 53, 69, 0.1);
+    }
+
+    .btn-icon .fa-star.featured {
+        color: #FFD700;
+    }
+
+    .admin-contact-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .contact-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+
+    .contact-info h3 {
+        margin: 0 0 8px 0;
+        color: #1C1C1C;
+    }
+
+    .contact-info p {
+        margin: 4px 0;
+        color: #6C757D;
+        font-size: 14px;
+    }
+
+    .status-select {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+    .status-select.new {
+        background: #FFE8D1;
+        color: #FF8C00;
+    }
+
+    .status-select.contacted {
+        background: #D1ECF1;
+        color: #17A2B8;
+    }
+
+    .status-select.closed {
+        background: #D4EDDA;
+        color: #28A745;
+    }
+
+    .contact-content {
+        margin-bottom: 16px;
+    }
+
+    .contact-subject,
+    .contact-message {
+        margin-bottom: 12px;
+    }
+
+    .contact-subject strong,
+    .contact-message strong {
+        color: #1C1C1C;
+    }
+
+    .contact-message p {
+        margin: 8px 0;
+        padding: 12px;
+        background: #F8F9FA;
+        border-radius: 6px;
+        color: #495057;
+    }
+
+    .contact-date {
+        font-size: 12px;
+        color: #ADB5BD;
+    }
+
+    .contact-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .chart-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .chart-label {
+        min-width: 80px;
+        font-size: 14px;
+        color: #495057;
+    }
+
+    .chart-bar {
+        flex: 1;
+        height: 8px;
+        background: #E9ECEF;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .chart-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #FF8C00, #FFB84D);
+        transition: width 0.5s ease;
+    }
+
+    .chart-value {
+        min-width: 30px;
+        font-weight: 600;
+        color: #FF8C00;
+        text-align: right;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6C757D;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: #E9ECEF;
+        margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 8px;
+        color: #495057;
+    }
+
+    .admin-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 16px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .admin-notification.success {
+        background: #28A745;
+    }
+
+    .admin-notification.error {
+        background: #DC3545;
+    }
+
+    .admin-notification.info {
+        background: #17A2B8;
+    }
+
+    .notification-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .notification-content button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0;
+        margin-left: auto;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .form-grid .form-group:last-child {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #E9ECEF;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 14px;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #FF8C00;
+        box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .checkmark {
+        position: relative;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px;
+        border-bottom: 1px solid #E9ECEF;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: #1C1C1C;
+    }
+
+    .property-form {
+        padding: 24px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #E9ECEF;
+    }
+
+    .modal-content.large {
+        max-width: 900px;
+        width: 90vw;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .property-header {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .contact-header {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .property-actions,
+        .contact-actions {
+            justify-content: center;
+        }
+
+        .admin-notification {
+            left: 20px;
+            right: 20px;
+        }
+    }
+`;
+
+const adminStyleSheet = document.createElement('style');
+adminStyleSheet.textContent = adminStyles;
+document.head.appendChild(adminStyleSheet);

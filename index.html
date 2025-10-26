@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZameenKhojo - Dreams to Reality</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="IMG_3352.PNG" alt="ZameenKhojo Logo" class="logo-img">
+                <div class="logo-text">
+                    <span class="logo-title">ZAMEENKHOJO</span>
+                    <span class="logo-subtitle">DREAMS TO REALITY</span>
+                </div>
+            </div>
+
+            <div class="nav-menu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#properties" class="nav-link">Properties</a>
+                <a href="#services" class="nav-link">Services</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#location" class="nav-link">Location</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <a href="admin.html" class="nav-link admin-link">
+                    <i class="fas fa-user-shield"></i> Admin
+                </a>
+            </div>
+
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <div class="container">
+                <div class="hero-grid">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            Find Your <span class="highlight">Perfect</span>
+                            <br>Dream Property
+                        </h1>
+                        <p class="hero-description">
+                            Discover luxury properties in prime locations across NCR. 
+                            Your dream home awaits with our expert guidance and trusted service.
+                        </p>
+                        <!-- <div class="hero-stats">
+                            <div class="stat-item">
+                                <h3>100+</h3>
+                                <p>Happy Families</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3>3+</h3>
+                                <p>Years Experience</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3>50+</h3>
+                                <p>Properties Sold</p>
+                            </div>
+                        </div> -->
+                        <div class="hero-buttons">
+                            <a href="#contact" class="btn btn-primary">
+                                <i class="fas fa-phone"></i>
+                                Contact Us
+                            </a>
+                            <!-- <a href="#properties" class="btn btn-outline">
+                                <i class="fas fa-search"></i>
+                                View Properties
+                            </a> -->
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="property-cards">
+                            <div class="floating-card card-1">
+                                <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop" alt="Villa">
+                                <div class="card-info">
+                                    <h4>Luxury Villa</h4>
+                                    <p>₹85 Lakhs</p>
+                                </div>
+                            </div>
+                            <div class="floating-card card-2">
+                                <img src="https://images.unsplash.com/photo-1588067444250-50f27842c0b2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1974" alt="Green Land">
+                                <div class="card-info">
+                                    <h4>Green Land</h4>
+                                    <p>₹45 Lakhs</p>
+                                </div>
+                            </div>
+                            <div class="floating-card card-3">
+                                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" alt="Commercial">
+                                <div class="card-info">
+                                    <h4>Commercial Space</h4>
+                                    <p>₹1.2 Crores</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Properties Section -->
+    <section id="properties" class="properties-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Our Properties</span>
+                <h2 class="section-title">Discover Amazing Properties</h2>
+                <p class="section-description">
+                    Browse through our carefully curated collection of premium properties 
+                    across Greater Noida, Noida, and surrounding areas.
+                </p>
+            </div>
+
+            <!-- Property Filters -->
+            <div class="property-filters">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">All Properties</button>
+                    <button class="filter-tab" data-filter="villa">Villas</button>
+                    <button class="filter-tab" data-filter="apartment">Apartments</button>
+                    <button class="filter-tab" data-filter="commercial">Commercial</button>
+                </div>
+                <div class="filter-controls">
+                    <select id="location-filter" class="filter-select">
+                        <option value="">All Locations</option>
+                    </select>
+                    <select id="price-filter" class="filter-select">
+                        <option value="">Price Range</option>
+                        <option value="0-5000000">Under ₹50 Lakhs</option>
+                        <option value="5000000-10000000">₹50L - ₹1Cr</option>
+                        <option value="10000000-">Above ₹1Cr</option>
+                    </select>
+                    <select id="bedrooms-filter" class="filter-select">
+                        <option value="">Bedrooms</option>
+                        <option value="1">1 BHK</option>
+                        <option value="2">2 BHK</option>
+                        <option value="3">3 BHK</option>
+                        <option value="4">4+ BHK</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Properties Grid -->
+            <div id="properties-grid" class="properties-grid">
+                <!-- Properties will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Our Services</span>
+                <h2 class="section-title">Comprehensive Real Estate Solutions</h2>
+                <p class="section-description">
+                    From residential to commercial, we offer end-to-end real estate services 
+                    tailored to your unique needs and requirements.
+                </p>
+            </div>
+
+            <div id="services-grid" class="services-grid">
+                <!-- Services will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">About Us</span>
+                <h2 class="section-title">Your Trusted Real Estate Partner</h2>
+                <p class="section-description">
+                    At ZameenKhojo, we believe finding the right property should be simple, 
+                    transparent, and stress-free.
+                </p>
+            </div>
+            
+            <div class="about-grid">
+                <div class="about-content">
+                    <span class="section-badge">About ZameenKhojo</span>
+                    <h3 class="section-title">Our Mission & Values</h3>
+                    <div class="about-text">
+                        <p>
+                            Our mission is to connect people with homes and investments that truly match 
+                            their needs, lifestyle, and aspirations. With deep knowledge of the real estate 
+                            market and a commitment to integrity, we provide our clients with trusted advice, 
+                            verified listings, and smooth end-to-end support. Whether you are buying, selling, 
+                            or investing, we ensure every step is guided by expertise and professionalism.
+                        </p>
+                    </div>
+                    <div class="about-features">
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <h4>Verified Properties</h4>
+                            <p>All properties are thoroughly verified and legally cleared</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-handshake"></i>
+                            <h4>Expert Guidance</h4>
+                            <p>Professional consultation from experienced real estate experts</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-clock"></i>
+                            <h4>24/7 Support</h4>
+                            <p>Round-the-clock assistance for all your property needs</p>
+                        </div>
+                    </div>
+                    <div class="hero-stats">
+                            <div class="stat-item">
+                                <h3 class="counter-families">500+</h3>
+                                <p>Happy Families</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3 class="counter-experience">3+</h3>
+                                <p>Years Experience</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3 class="counter-properties">200+</h3>
+                                <p>Properties Sold</p>
+                            </div>
+                        </div>
+                </div>
+
+                <div class="about-agent">
+                    <div class="agent-card">
+                        <div class="agent-image">
+                            <img id="agent-photo" src="IMG_3049.PNG" alt="Agent">
+                            <div class="agent-badge">
+                                <i class="fas fa-star"></i>
+                                Top Agent
+                            </div>
+                        </div>
+                        <div class="agent-info">
+                            <h3 id="agent-name">Rohan Nagar</h3>
+                            <!-- <p id="agent-title">Real Estate Expert</p> -->
+                            <p id="agent-bio">
+                                With over 3 years of experience, I specialize in residential 
+                                properties and commercial investments across NCR region.
+                            </p>
+                            <div class="agent-contact">
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span id="agent-phone">+91 9871668467</span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <span id="agent-email">infozameenkhojo@gmail.com</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location Section -->
+    <section id="location" class="location-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Our Location</span>
+                <h2 class="section-title">Visit Our Office</h2>
+                <p class="section-description">
+                    Find us conveniently located in Greater Noida. Drop by for a personal 
+                    consultation or schedule a property viewing.
+                </p>
+            </div>
+
+            <div class="location-grid">
+                <div class="location-info">
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Office Address</h4>
+                            <p>H-109, 4th Street<br>Gamma 2, Greater Noida 201308<br>Uttar Pradesh, India</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Office Hours</h4>
+                            <p>Monday - Friday: 9:00 AM - 6:00 PM<br>Saturday: 10:00 AM - 4:00 PM<br>Sunday: By Appointment</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Contact Details</h4>
+                            <p>Phone: +91 9871668467<br>Email: infozameenkhojo@gmail.com<br>WhatsApp Available</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="map-container">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14012.33678119219!2d77.354635!3d28.535516!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce511998437e1%3A0xcc2edcdcf3f4ea81!2sNoida,%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1697592000100!5m2!1sen!2sin"
+                        width="100%" 
+                        height="100%"
+                        style="border:0"
+                        allowfullscreen
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="maps" class="maps-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Maps</span>
+                <h2 class="section-title">Interactive Maps</h2>
+                <p class="section-description">Explore locations with our interactive maps</p>
+            </div>
+            <div class="maps-grid">
+                <div class="map-card">
+                    <div class="map-header">
+                        <h4>Property Locations</h4>
+                        <p>Find properties in your preferred area</p>
+                    </div>
+                    <div class="map-placeholder">
+                        <iframe id="property-map" 
+                                src="https://maps.google.com/maps?q=Greater+Noida&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+                                width="100%" 
+                                height="300" 
+                                frameborder="0" 
+                                allowfullscreen>
+                        </iframe>
+                        <div class="map-controls">
+                            <button class="map-btn" onclick="app.updateMap('property-map', 'Greater+Noida')">Greater Noida</button>
+                            <button class="map-btn" onclick="app.updateMap('property-map', 'Noida')">Noida</button>
+                            <button class="map-btn" onclick="app.updateMap('property-map', 'Ghaziabad')">Ghaziabad</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="map-card">
+                    <div class="map-header">
+                        <h4>Area Development</h4>
+                        <p>Check upcoming developments and infrastructure</p>
+                    </div>
+                    <div class="map-placeholder">
+                        <iframe id="development-map" 
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d448274.43072313!2d77.19849552141714!3d27.993749983050194!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x397371972757c5c7%3A0x2de9d3e84e7e9e9e!2sYamuna%20Expressway!5e0!3m2!1sen!2sin!4v1697594857326!5m2!1sen!2sin" 
+                                width="100%" 
+                                height="300" 
+                                frameborder="0" 
+                                allowfullscreen>
+                        </iframe>
+                        <div class="map-controls">
+                            <button class="map-btn" onclick="app.updateMap('development-map', 'Noida+Metro+Map')">Metro Lines</button>
+                            <button class="map-btn" onclick="app.updateMap('development-map', 'Delhi+NCR+Development')">NCR Development</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="custom-map-info">
+                <div class="info-box">
+                    <h4>Custom Map Integration</h4>
+                    <p>Want to add your own maps? Update the iframe sources in the HTML or use our admin panel to manage map locations easily.</p>
+                </div>
+            </div> -->
+        </div>
+    </section>
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Get In Touch</span>
+                <h2 class="section-title">Ready to Find Your Dream Property?</h2>
+                <p class="section-description">
+                    Contact us today for expert guidance and personalized service. 
+                    We're here to help you every step of the way.
+                </p>
+            </div>
+
+            <div class="contact-grid">
+                <div class="contact-form-container">
+                    <form id="contact-form" class="contact-form">
+                        <div class="form-group">
+                            <input type="text" id="contact-name" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="contact-email" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="contact-phone" name="phone" placeholder="Your Phone Number">
+                        </div>
+                        <div class="form-group">
+                            <select id="contact-subject" name="subject" required>
+                                <option value="">Select Subject</option>
+                                <option value="buying">Buying Property</option>
+                                <option value="selling">Selling Property</option>
+                                <option value="renting">Renting Property</option>
+                                <option value="investment">Investment Consultation</option>
+                                <option value="general">General Inquiry</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="contact-message" name="message" rows="6" placeholder="Your Message" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <div class="contact-info">
+                    <div class="contact-methods">
+                        <div class="method-item">
+                            <div class="method-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>Call Us</h4>
+                                <p>+91 9871668467</p>
+                                <span>Mon-Fri 9AM-6PM</span>
+                            </div>
+                        </div>
+
+                        <div class="method-item">
+                            <div class="method-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>Email Us</h4>
+                                <p>infozameenkhojo@gmail.com</p>
+                                <span>We reply within 24 hours</span>
+                            </div>
+                        </div>
+
+                        <div class="method-item">
+                            <div class="method-icon">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>WhatsApp</h4>
+                                <p>+91 9871668467</p>
+                                <span>Quick responses</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Media Section -->
+    <section class="social-section">
+        <div class="container">
+            <div class="social-content">
+                <h3>Connect With Us</h3>
+                <p>Follow us on social media for the latest property updates and real estate tips</p>
+                <div class="social-links">
+                    <!-- <a href="#" class="social-link facebook" title="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                        <span>Facebook</span>
+                    </a> -->
+                    <a href="https://www.instagram.com/zameenkhojo?igsh=MWozY2RvZW5ucHZieQ%3D%3D&utm_source=qr" 
+                    class="social-link instagram" 
+                    title="Instagram" 
+                    target="_blank" 
+                    rel="noopener">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                    </a>
+                    <!-- <a href="#" class="social-link twitter" title="Twitter">
+                        <i class="fab fa-twitter"></i>
+                        <span>Twitter</span>
+                    </a>
+                    <a href="#" class="social-link linkedin" title="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                        <span>LinkedIn</span>
+                    </a> -->
+                    <!-- YouTube - REPLACE WITH CLIENT'S YOUTUBE CHANNEL -->
+                     <a href="https://youtube.com/@zameen_khojo?si=3SMSCl-Ee6b3cV0c" 
+                     class="social-link youtube" 
+                     title="YouTube" 
+                     target="_blank" 
+                     rel="noopener">
+                     <i class="fab fa-youtube"></i>
+                     <span>YouTube</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="IMG_3352.PNG" alt="ZameenKhojo">
+                        <div class="footer-brand">
+                            <span class="brand-name">ZAMEEN KHOJO</span>
+                            <span class="brand-tagline">Dreams to Reality</span>
+                        </div>
+                    </div>
+                    <p>Your trusted partner in real estate. Making property dreams come true across NCR.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#properties">Properties</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#">Residential Sales</a></li>
+                        <li><a href="#">Commercial Real Estate</a></li>
+                        <li><a href="#">Property Management</a></li>
+                        <li><a href="#">Investment Consulting</a></li>
+                        <li><a href="#">Legal Assistance</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <div class="contact-details">
+                        <p><i class="fas fa-map-marker-alt"></i> H109, 4th Street, Gamma 2, Greater Noida</p>
+                        <p><i class="fas fa-phone"></i> +91 9871668467</p>
+                        <p><i class="fas fa-envelope"></i> infozameenkhojo@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="copyright">
+                    <p>&copy; 2025 ZameenKhojo. All rights reserved. | Privacy Policy | Terms of Service</p>
+                </div>
+                <div class="footer-socials">
+                    <!-- <a href="#"><i class="fab fa-facebook-f"></i></a> -->
+                    <a href="https://www.instagram.com/zameenkhojo?igsh=MWozY2RvZW5ucHZieQ%3D%3D&utm_source=qr" target="_blank" rel="noopener">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://youtube.com/@zameen_khojo?si=3SMSCl-Ee6b3cV0c" target="_blank" rel="noopener">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <!-- <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a> -->
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Button -->
+    <div id="whatsapp-btn" class="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+        <span class="whatsapp-text">Chat with us</span>
+    </div>
+
+    <!-- Property Modal -->
+    <div id="property-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div id="property-details">
+                <!-- Property details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "PORT": 3000,
+  "JWT_SECRET": "zameenkhojo_secret_key_2024",
+  "UPLOAD_PATH": "./public/uploads",
+  "MAX_FILE_SIZE": 5242880,
+  "ADMIN_EMAIL": "admin@zameenkhojo.com",
+  "SITE_NAME": "ZameenKhojo",
+  "SITE_URL": "http://localhost:3000"
+}
