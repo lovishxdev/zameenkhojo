@@ -670,8 +670,8 @@ class ZameenKhojoApp {
         const agentEmail = document.getElementById('agent-email');
         if (agentEmail) agentEmail.textContent = this.agent.email;
         
-        const agentPhoto = document.getElementById('agent-photo');
-        if (agentPhoto) agentPhoto.src = this.agent.photo;
+        // const agentPhoto = document.getElementById('agent-photo');
+        // if (agentPhoto) agentPhoto.src = this.agent.photo;
     }
 
     // Setup Scroll Effects
