@@ -88,7 +88,27 @@ app.get('/api/properties/:id', (req, res) => {
 
 // Admin - Create property (simplified without file upload for now)
 app.post('/api/admin/properties', checkAuth, (req, res) => {
-    const { title, type, location, price, bedrooms, bathrooms, sqft, description, amenities } = req.body;
+    console.log('=== CREATE PROPERTY REQUEST ===');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('Images field type:', typeof req.body.images);
+    console.log('Images field value:', req.body.images);
+    
+    const { title, type, location, price, bedrooms, bathrooms, sqft, description, amenities, images, featured } = req.body;
+    
+    // Handle images - can be string (newline-separated) or array
+    let imagesArray = [];
+    if (images !== undefined && images !== null) {
+        if (typeof images === 'string') {
+            imagesArray = images.split('\n')
+                .map(img => img.trim())
+                .filter(img => img && img.length > 0);
+        } else if (Array.isArray(images)) {
+            imagesArray = images.filter(img => img && (typeof img === 'string' ? img.trim().length > 0 : false));
+        }
+    }
+    console.log('Processed images array:', imagesArray);
+    console.log('Images array length:', imagesArray.length);
+    
     const newProp = {
         id: Date.now(),
         title, type, location,
@@ -97,36 +117,85 @@ app.post('/api/admin/properties', checkAuth, (req, res) => {
         bathrooms: parseInt(bathrooms),
         sqft: parseInt(sqft),
         description,
-        amenities: amenities ? amenities.split(',').map(a => a.trim()) : [],
-        images: [],
-        featured: false,
+        amenities: amenities ? (typeof amenities === 'string' ? amenities.split(',').map(a => a.trim()) : amenities) : [],
+        images: imagesArray,
+        featured: featured === 'true' || featured === true || featured === 'on',
         dateAdded: new Date().toISOString()
     };
+    
+    console.log('New property object:', JSON.stringify(newProp, null, 2));
+    
     properties.push(newProp);
     saveData();
+    
+    console.log('Property saved. Total properties:', properties.length);
+    console.log('=== END CREATE PROPERTY ===\n');
+    
     res.json({ success: true, property: newProp });
 });
 
 // Admin - Update property
 app.put('/api/admin/properties/:id', checkAuth, (req, res) => {
+    console.log('=== UPDATE PROPERTY REQUEST ===');
+    console.log('Property ID:', req.params.id);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('Images field type:', typeof req.body.images);
+    console.log('Images field value:', req.body.images);
+    
     const idx = properties.findIndex(p => p.id === parseInt(req.params.id));
     if (idx === -1) return res.status(404).json({ error: 'Not found' });
 
-    const { title, type, location, price, bedrooms, bathrooms, sqft, description, amenities, featured } = req.body;
+    console.log('Existing property images:', properties[idx].images);
+
+    const { title, type, location, price, bedrooms, bathrooms, sqft, description, amenities, images, featured } = req.body;
+    
+    // Handle images - can be string (newline-separated) or array
+    let imagesArray = properties[idx].images || []; // default to existing or empty array
+    if (images !== undefined && images !== null) {
+        if (typeof images === 'string') {
+            // Even empty string should be processed - will result in empty array
+            imagesArray = images.split('\n')
+                .map(img => img.trim())
+                .filter(img => img && img.length > 0);
+        } else if (Array.isArray(images)) {
+            imagesArray = images.filter(img => img && (typeof img === 'string' ? img.trim().length > 0 : false));
+        }
+    }
+    console.log('Processed images array:', imagesArray);
+    console.log('Images array length:', imagesArray.length);
+    
+    // Handle amenities
+    let amenitiesArray = properties[idx].amenities; // default to existing
+    if (amenities !== undefined) {
+        if (typeof amenities === 'string') {
+            amenitiesArray = amenities.split(',').map(a => a.trim()).filter(a => a);
+        } else if (Array.isArray(amenities)) {
+            amenitiesArray = amenities;
+        }
+    }
+    
     properties[idx] = {
         ...properties[idx],
         title: title || properties[idx].title,
         type: type || properties[idx].type,
         location: location || properties[idx].location,
         price: price ? parseInt(price) : properties[idx].price,
-        bedrooms: bedrooms ? parseInt(bedrooms) : properties[idx].bedrooms,
+        bedrooms: bedrooms !== undefined ? parseInt(bedrooms) : properties[idx].bedrooms,
         bathrooms: bathrooms ? parseInt(bathrooms) : properties[idx].bathrooms,
         sqft: sqft ? parseInt(sqft) : properties[idx].sqft,
         description: description || properties[idx].description,
-        amenities: amenities ? amenities.split(',').map(a => a.trim()) : properties[idx].amenities,
-        featured: featured === 'true' || featured === true
+        amenities: amenitiesArray,
+        images: imagesArray,
+        featured: featured !== undefined ? (featured === 'true' || featured === true || featured === 'on') : properties[idx].featured
     };
+    
+    console.log('Updated property object:', JSON.stringify(properties[idx], null, 2));
+    
     saveData();
+    
+    console.log('Property updated and saved.');
+    console.log('=== END UPDATE PROPERTY ===\n');
+    
     res.json({ success: true, property: properties[idx] });
 });
 

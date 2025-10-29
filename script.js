@@ -52,111 +52,9 @@ class ZameenKhojoApp {
             }
         ];
 
-        // Properties data
-        this.properties = [
-            {
-                id: 1,
-                title: "Luxury Villa in Greater Noida",
-                type: "villa",
-                location: "Greater Noida, UP",
-                price: 8500000,
-                bedrooms: 4,
-                bathrooms: 4,
-                sqft: 3200,
-                description: "Stunning luxury villa with modern amenities, spacious rooms, and premium finishes. Perfect for families seeking comfort and style in a prime location.",
-                amenities: ["Swimming Pool", "Garden", "Parking", "Security", "Modern Kitchen", "Balcony", "Gym"],
-                images: [
-                    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop",
-                    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop",
-                    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop"
-                ],
-                featured: true
-            },
-            {
-                id: 2,
-                title: "Modern Apartment in Noida",
-                type: "apartment", 
-                location: "Noida, UP",
-                price: 4500000,
-                bedrooms: 3,
-                bathrooms: 2,
-                sqft: 1800,
-                description: "Contemporary apartment with excellent connectivity, modern amenities, and beautiful city views. Ideal for urban living.",
-                amenities: ["City View", "Gym", "Parking", "Lift", "Security", "Balcony", "Club House"],
-                images: [
-                    "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
-                    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop"
-                ],
-                featured: true
-            },
-            {
-                id: 3,
-                title: "Commercial Space in Sector 62",
-                type: "commercial",
-                location: "Sector 62, Noida",
-                price: 12000000,
-                bedrooms: 0,
-                bathrooms: 2,
-                sqft: 2500,
-                description: "Prime commercial space perfect for offices, retail, or business operations. Excellent location with high footfall and visibility.",
-                amenities: ["Prime Location", "Parking", "Security", "Lift", "Reception Area", "Conference Room"],
-                images: [
-                    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
-                    "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&h=600&fit=crop"
-                ],
-                featured: false
-            },
-            {
-                id: 4,
-                title: "Independent House in Ghaziabad",
-                type: "house",
-                location: "Ghaziabad, UP", 
-                price: 6200000,
-                bedrooms: 3,
-                bathrooms: 3,
-                sqft: 2200,
-                description: "Beautiful independent house with garden, parking, and all modern amenities. Perfect for nuclear families looking for privacy.",
-                amenities: ["Garden", "Parking", "Independent", "Modern Kitchen", "Terrace", "Store Room"],
-                images: [
-                    "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&h=600&fit=crop",
-                    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop"
-                ],
-                featured: true
-            },
-            {
-                id: 5,
-                title: "Studio Apartment in Delhi",
-                type: "apartment",
-                location: "Delhi, NCR",
-                price: 2800000,
-                bedrooms: 1,
-                bathrooms: 1, 
-                sqft: 800,
-                description: "Compact and modern studio apartment, perfect for young professionals. Great connectivity and essential amenities.",
-                amenities: ["Metro Connectivity", "Gym", "Security", "Furnished", "Balcony", "Wi-Fi Ready"],
-                images: [
-                    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop"
-                ],
-                featured: false
-            },
-            {
-                id: 6,
-                title: "Penthouse in Noida Extension",
-                type: "apartment",
-                location: "Noida Extension, UP",
-                price: 15000000,
-                bedrooms: 4,
-                bathrooms: 5,
-                sqft: 4000,
-                description: "Luxurious penthouse with panoramic views, private terrace, and premium amenities. The epitome of luxury living.",
-                amenities: ["Private Terrace", "Panoramic Views", "Jacuzzi", "Home Theater", "Wine Cellar", "Concierge"],
-                images: [
-                    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop",
-                    "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop"
-                ],
-                featured: true
-            }
-        ];
+        // Properties will be loaded from server
+        this.properties = [];
+        this.isLoadingProperties = false;
 
         // Current filters and state
         this.currentFilters = {
@@ -166,19 +64,27 @@ class ZameenKhojoApp {
             bedrooms: ''
         };
 
-        this.filteredProperties = [...this.properties];
+        this.filteredProperties = [];
 
         // Initialize app
         this.init();
     }
 
-    init() {
+    async init() {
         this.setupEventListeners();
         this.setupNavigation();
         this.setupWhatsApp();
         this.renderServices();
+
+        // Show loading state
+        this.showLoadingState();
+        
+        // Load properties from backend before rendering property-dependent UI
+        await this.loadPropertiesFromServer();
+        this.filteredProperties = [...this.properties];
         this.renderProperties();
         this.setupLocationFilter();
+
         this.updateAgentInfo();
         this.setupScrollEffects();
         this.setupFormHandlers();
@@ -187,6 +93,77 @@ class ZameenKhojoApp {
         setTimeout(() => {
             this.initializeCounters();
         }, 100);
+    }
+
+    async loadPropertiesFromServer() {
+        this.isLoadingProperties = true;
+        try {
+            const response = await fetch('/api/properties');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+
+            if (Array.isArray(data)) {
+                // Always use server data, even if empty array
+                this.properties = data.map((p) => {
+                    // Handle images - convert to array and filter out empty values
+                    let imagesArray = [];
+                    if (p.images) {
+                        if (Array.isArray(p.images)) {
+                            imagesArray = p.images.filter(img => img && img.trim());
+                        } else if (typeof p.images === 'string') {
+                            // Split by newline if it's a string
+                            imagesArray = p.images.split('\n').map(img => img.trim()).filter(img => img);
+                        }
+                    }
+                    
+                    return {
+                        id: p.id,
+                        title: p.title,
+                        type: p.type,
+                        location: p.location,
+                        price: typeof p.price === 'string' ? parseInt(p.price) : p.price,
+                        bedrooms: p.bedrooms ?? 0,
+                        bathrooms: p.bathrooms ?? 0,
+                        sqft: p.sqft ?? 0,
+                        description: p.description || '',
+                        amenities: Array.isArray(p.amenities) ? p.amenities : (typeof p.amenities === 'string' ? p.amenities.split(',').map(a => a.trim()).filter(Boolean) : []),
+                        images: imagesArray,
+                        featured: !!p.featured
+                    };
+                });
+            } else {
+                // Invalid response format
+                this.properties = [];
+            }
+        } catch (e) {
+            console.error('Failed to load properties from backend:', e);
+            this.properties = []; // Empty array on error - show empty state
+        } finally {
+            this.isLoadingProperties = false;
+        }
+    }
+
+    showLoadingState() {
+        const container = document.getElementById('properties-grid');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="loading-state" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px;">
+                <div class="loading-spinner" style="width: 60px; height: 60px; border: 4px solid #f3f3f3; border-top: 4px solid #FF8C00; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                <h3 style="font-size: 20px; color: #333; margin-bottom: 8px; font-weight: 600;">Loading Properties</h3>
+                <p style="font-size: 14px; color: #666;">Please wait while we fetch the latest properties...</p>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        `;
     }
     // ADD THESE TWO FUNCTIONS HERE:
     initializeCounters() {
@@ -454,9 +431,32 @@ class ZameenKhojoApp {
         const container = document.getElementById('properties-grid');
         if (!container) return;
 
-        container.innerHTML = this.filteredProperties.map(property => `
+        // Show empty state if no properties available
+        if (!this.filteredProperties || this.filteredProperties.length === 0) {
+            container.innerHTML = `
+                <div class="empty-properties-state" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px;">
+                    <div class="empty-state-icon" style="font-size: 64px; color: #ddd; margin-bottom: 20px;">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h3 style="font-size: 24px; color: #333; margin-bottom: 12px; font-weight: 600;">No Properties Listed</h3>
+                    <p style="font-size: 16px; color: #666; max-width: 500px; margin: 0 auto;">
+                        We don't have any properties available at the moment. Please check back later or contact us for more information.
+                    </p>
+                    <a href="#contact" class="btn btn-primary" style="margin-top: 24px; display: inline-block;">
+                        <i class="fas fa-phone"></i> Contact Us
+                    </a>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = this.filteredProperties.map(property => {
+            const images = Array.isArray(property.images) ? property.images : [];
+            const firstImage = images.length > 0 && images[0] ? images[0] : 'https://via.placeholder.com/400x300?text=No+Image';
+            
+            return `
             <div class="property-card" onclick="app.showPropertyModal(${property.id})" data-aos="fade-up">
-                <img src="${property.images[0]}" alt="${property.title}" class="property-image" loading="lazy">
+                <img src="${firstImage}" alt="${property.title}" class="property-image" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
                 <div class="property-info">
                     <div class="property-price">${this.formatPrice(property.price)}</div>
                     <h3 class="property-title">${property.title}</h3>
@@ -470,15 +470,16 @@ class ZameenKhojoApp {
                         <span><i class="fas fa-ruler-combined"></i> ${property.sqft} sq ft</span>
                     </div>
                     <div class="property-amenities">
-                        ${property.amenities.slice(0, 3).map(amenity => `
+                        ${Array.isArray(property.amenities) && property.amenities.length > 0 ? property.amenities.slice(0, 3).map(amenity => `
                             <span class="amenity">${amenity}</span>
-                        `).join('')}
-                        ${property.amenities.length > 3 ? `<span class="amenity">+${property.amenities.length - 3} more</span>` : ''}
+                        `).join('') : ''}
+                        ${Array.isArray(property.amenities) && property.amenities.length > 3 ? `<span class="amenity">+${property.amenities.length - 3} more</span>` : ''}
                     </div>
                 </div>
             </div>
 
-        `).join('');
+        `;
+        }).join('');
         
     }
     
@@ -536,16 +537,18 @@ class ZameenKhojoApp {
 
         const modal = document.getElementById('property-modal');
         const detailsContainer = document.getElementById('property-details');
+        const images = Array.isArray(property.images) ? property.images.filter(img => !!img) : [];
+        const mainImageSrc = images[0] || 'https://via.placeholder.com/800x600?text=No+Image';
 
         detailsContainer.innerHTML = `
             <div class="property-modal-content">
                 <div class="property-gallery">
                     <div class="main-image">
-                        <img src="${property.images[0]}" alt="${property.title}" id="main-property-image">
+                        <img src="${mainImageSrc}" alt="${property.title}" id="main-property-image">
                     </div>
-                    ${property.images.length > 1 ? `
+                    ${images.length > 1 ? `
                         <div class="thumbnail-images">
-                            ${property.images.map((img, index) => `
+                            ${images.map((img, index) => `
                                 <img src="${img}" alt="${property.title} ${index + 1}" 
                                      class="thumbnail ${index === 0 ? 'active' : ''}"
                                      onclick="app.switchPropertyImage('${img}', this)">
@@ -604,6 +607,15 @@ class ZameenKhojoApp {
 
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
+        
+        // Ensure modal is vertically centered
+        setTimeout(() => {
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                // Scroll modal to center if content is tall
+                modal.scrollTop = (modal.scrollHeight - modal.clientHeight) / 2;
+            }
+        }, 10);
     }
 
     // Switch Property Image

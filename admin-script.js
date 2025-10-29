@@ -3,67 +3,16 @@ class AdminPanel {
     constructor() {
         this.isLoggedIn = false;
         this.currentTab = 'properties';
-        this.properties = [
-            {
-                id: 1,
-                title: "Luxury Villa in Greater Noida",
-                type: "villa",
-                location: "Greater Noida, UP",
-                price: 8500000,
-                bedrooms: 4,
-                bathrooms: 4,
-                sqft: 3200,
-                description: "Stunning luxury villa with modern amenities, spacious rooms, and premium finishes.",
-                amenities: ["Swimming Pool", "Garden", "Parking", "Security", "Modern Kitchen", "Balcony"],
-                images: [
-                    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop",
-                    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop"
-                ],
-                featured: true,
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: 2,
-                title: "Modern Apartment in Noida",
-                type: "apartment",
-                location: "Noida, UP", 
-                price: 4500000,
-                bedrooms: 3,
-                bathrooms: 2,
-                sqft: 1800,
-                description: "Contemporary apartment with excellent connectivity and modern amenities.",
-                amenities: ["City View", "Gym", "Parking", "Lift", "Security", "Balcony"],
-                images: [
-                    "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop"
-                ],
-                featured: true,
-                createdAt: new Date().toISOString()
-            }
-        ];
-
-        this.contacts = [
-            {
-                id: 1,
-                name: "John Doe",
-                email: "john@example.com",
-                phone: "+91 9876543210",
-                subject: "buying",
-                message: "I'm interested in buying a villa in Greater Noida",
-                status: "new",
-                createdAt: new Date().toISOString()
-            }
-        ];
-
-        this.nextPropertyId = 3;
-        this.nextContactId = 2;
+        // Properties and contacts will be loaded from backend
+        this.properties = [];
+        this.contacts = [];
 
         this.init();
     }
 
-    init() {
+    async init() {
         this.setupEventListeners();
-        this.checkLoginStatus();
-        this.updateStats();
+        await this.checkLoginStatus();
     }
 
     setupEventListeners() {
@@ -129,46 +78,86 @@ class AdminPanel {
         });
     }
 
-    checkLoginStatus() {
-        // Check if already logged in (in real app, check session/token)
-        const savedLogin = localStorage.getItem('admin_logged_in');
-        if (savedLogin === 'true') {
+    async checkLoginStatus() {
+        // Check if already logged in via API token
+        if (window.api && window.api.isAdminLoggedIn()) {
             this.isLoggedIn = true;
+            await this.loadDataFromServer();
             this.showDashboard();
         }
     }
 
-    handleLogin(e) {
+    async handleLogin(e) {
         e.preventDefault();
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
-        // Simple authentication (in real app, use proper authentication)
-        if (username === 'admin' && password === 'admin123') {
-            this.isLoggedIn = true;
-            localStorage.setItem('admin_logged_in', 'true');
-            this.showDashboard();
-            this.showNotification('Login successful!', 'success');
-        } else {
-            this.showNotification('Invalid credentials!', 'error');
+        try {
+            if (!window.api) {
+                throw new Error('API not loaded');
+            }
+
+            const response = await window.api.adminLogin({ username, password });
+            
+            if (response.success) {
+                this.isLoggedIn = true;
+                await this.loadDataFromServer();
+                this.showDashboard();
+                this.showNotification('Login successful!', 'success');
+            } else {
+                this.showNotification('Invalid credentials!', 'error');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showNotification('Login failed. Please try again.', 'error');
+        }
+    }
+
+    async loadDataFromServer() {
+        try {
+            // Load properties
+            this.properties = await window.api.getProperties() || [];
+            
+            // Load contacts
+            this.contacts = await window.api.getContacts() || [];
+            
+            // Update stats
+            this.updateStats();
+        } catch (error) {
+            console.error('Error loading data from server:', error);
+            this.showNotification('Failed to load data from server', 'error');
+            // Initialize as empty arrays if load fails
+            this.properties = [];
+            this.contacts = [];
         }
     }
 
     handleLogout() {
         this.isLoggedIn = false;
-        localStorage.removeItem('admin_logged_in');
+        if (window.api) {
+            window.api.adminLogout();
+        }
+        this.properties = [];
+        this.contacts = [];
         document.getElementById('login-section').style.display = 'flex';
         document.getElementById('admin-dashboard').classList.add('hidden');
         document.getElementById('logout-btn').style.display = 'none';
         document.getElementById('login-form').reset();
-        this.showNotification('Logged out successfully!', 'success');
+        // Immediate redirect to main website
+        window.location.replace('index.html');
     }
 
-    showDashboard() {
+    async showDashboard() {
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('admin-dashboard').classList.remove('hidden');
         document.getElementById('logout-btn').style.display = 'flex';
+        
+        // Ensure data is loaded
+        if (this.properties.length === 0 && this.contacts.length === 0) {
+            await this.loadDataFromServer();
+        }
+        
         this.renderProperties();
         this.renderContacts();
         this.renderAnalytics();
@@ -201,17 +190,17 @@ class AdminPanel {
             const property = this.properties.find(p => p.id === propertyId);
             if (property) {
                 title.textContent = 'Edit Property';
-                form.querySelector('#property-title').value = property.title;
-                form.querySelector('#property-type').value = property.type;
-                form.querySelector('#property-location').value = property.location;
-                form.querySelector('#property-price').value = property.price;
-                form.querySelector('#property-bedrooms').value = property.bedrooms;
-                form.querySelector('#property-bathrooms').value = property.bathrooms;
-                form.querySelector('#property-sqft').value = property.sqft;
-                form.querySelector('#property-featured').checked = property.featured;
-                form.querySelector('#property-description').value = property.description;
-                form.querySelector('#property-images').value = property.images.join('\n');
-                form.querySelector('#property-amenities').value = property.amenities.join(', ');
+                form.querySelector('#property-title').value = property.title || '';
+                form.querySelector('#property-type').value = property.type || '';
+                form.querySelector('#property-location').value = property.location || '';
+                form.querySelector('#property-price').value = property.price || '';
+                form.querySelector('#property-bedrooms').value = property.bedrooms || 0;
+                form.querySelector('#property-bathrooms').value = property.bathrooms || 1;
+                form.querySelector('#property-sqft').value = property.sqft || '';
+                form.querySelector('#property-featured').checked = property.featured || false;
+                form.querySelector('#property-description').value = property.description || '';
+                form.querySelector('#property-images').value = Array.isArray(property.images) ? property.images.join('\n') : (property.images || '');
+                form.querySelector('#property-amenities').value = Array.isArray(property.amenities) ? property.amenities.join(', ') : (property.amenities || '');
                 form.querySelector('#property-id').value = property.id;
             }
         } else {
@@ -224,7 +213,7 @@ class AdminPanel {
         modal.style.display = 'flex';
     }
 
-    handlePropertyForm(e) {
+    async handlePropertyForm(e) {
         e.preventDefault();
 
         const formData = new FormData(e.target);
@@ -232,43 +221,65 @@ class AdminPanel {
             title: formData.get('title'),
             type: formData.get('type'),
             location: formData.get('location'),
-            price: parseInt(formData.get('price')),
-            bedrooms: parseInt(formData.get('bedrooms')),
-            bathrooms: parseInt(formData.get('bathrooms')),
-            sqft: parseInt(formData.get('sqft')),
-            featured: formData.get('featured') === 'on',
+            price: formData.get('price'),
+            bedrooms: formData.get('bedrooms'),
+            bathrooms: formData.get('bathrooms'),
+            sqft: formData.get('sqft'),
+            featured: formData.get('featured') === 'on' ? 'true' : 'false',
             description: formData.get('description'),
-            images: formData.get('images').split('\n').filter(img => img.trim()),
-            amenities: formData.get('amenities').split(',').map(a => a.trim()).filter(a => a)
+            images: formData.get('images'), // Keep as string with newlines
+            amenities: formData.get('amenities') // Keep as comma-separated string
         };
 
         const propertyId = formData.get('id');
 
-        if (propertyId) {
-            // Edit existing property
-            const index = this.properties.findIndex(p => p.id === parseInt(propertyId));
-            if (index !== -1) {
-                this.properties[index] = { 
-                    ...this.properties[index], 
-                    ...propertyData,
-                    updatedAt: new Date().toISOString()
-                };
-            }
-            this.showNotification('Property updated successfully!', 'success');
-        } else {
-            // Add new property
-            const newProperty = { 
-                id: this.nextPropertyId++, 
-                ...propertyData,
-                createdAt: new Date().toISOString()
-            };
-            this.properties.push(newProperty);
-            this.showNotification('Property added successfully!', 'success');
-        }
+        try {
+            // Debug log
+            console.log('Sending property data:', propertyData);
+            console.log('Images field:', propertyData.images);
+            console.log('Images type:', typeof propertyData.images);
+            
+            // Send as JSON directly to match server expectation
+            const url = propertyId 
+                ? `${window.api.baseURL}/admin/properties/${propertyId}`
+                : `${window.api.baseURL}/admin/properties`;
+            
+            const method = propertyId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${window.api.token}`
+                },
+                body: JSON.stringify(propertyData)
+            });
 
-        this.renderProperties();
-        this.updateStats();
-        this.closeModal();
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to save property');
+            }
+
+            console.log('Server response:', result);
+            console.log('Returned property images:', result.property?.images);
+
+            if (propertyId) {
+                this.showNotification('Property updated successfully!', 'success');
+            } else {
+                this.showNotification('Property added successfully!', 'success');
+            }
+
+            // Reload properties from server to get updated data
+            await this.loadDataFromServer();
+            console.log('Reloaded properties. First property images:', this.properties[0]?.images);
+            this.renderProperties();
+            this.updateStats();
+            this.closeModal();
+        } catch (error) {
+            console.error('Error saving property:', error);
+            this.showNotification('Failed to save property. Please try again.', 'error');
+        }
     }
 
     renderProperties() {
@@ -289,7 +300,7 @@ class AdminPanel {
         container.innerHTML = this.properties.map(property => `
             <div class="admin-property-card">
                 <div class="property-image">
-                    <img src="${property.images[0]}" alt="${property.title}" loading="lazy">
+                    <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${property.title}" loading="lazy">
                     ${property.featured ? '<div class="featured-badge">Featured</div>' : ''}
                 </div>
                 <div class="property-content">
@@ -443,31 +454,68 @@ class AdminPanel {
         document.getElementById('total-value').textContent = this.formatPriceShort(totalValue);
     }
 
-    deleteProperty(propertyId) {
+    async deleteProperty(propertyId) {
         if (confirm('Are you sure you want to delete this property?')) {
-            this.properties = this.properties.filter(p => p.id !== propertyId);
-            this.renderProperties();
-            this.updateStats();
-            this.showNotification('Property deleted successfully!', 'success');
+            try {
+                await window.api.deleteProperty(propertyId);
+                // Reload properties from server
+                await this.loadDataFromServer();
+                this.renderProperties();
+                this.updateStats();
+                this.showNotification('Property deleted successfully!', 'success');
+            } catch (error) {
+                console.error('Error deleting property:', error);
+                this.showNotification('Failed to delete property. Please try again.', 'error');
+            }
         }
     }
 
-    toggleFeatured(propertyId) {
+    async toggleFeatured(propertyId) {
         const property = this.properties.find(p => p.id === propertyId);
         if (property) {
-            property.featured = !property.featured;
-            this.renderProperties();
-            this.updateStats();
-            this.showNotification(`Property ${property.featured ? 'added to' : 'removed from'} featured list!`, 'success');
+            try {
+                const updatedProperty = {
+                    featured: !property.featured ? 'true' : 'false'
+                };
+                
+                const response = await fetch(`${window.api.baseURL}/admin/properties/${propertyId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${window.api.token}`
+                    },
+                    body: JSON.stringify(updatedProperty)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to update property');
+                }
+
+                // Reload properties from server
+                await this.loadDataFromServer();
+                this.renderProperties();
+                this.updateStats();
+                this.showNotification(`Property ${updatedProperty.featured === 'true' ? 'added to' : 'removed from'} featured list!`, 'success');
+            } catch (error) {
+                console.error('Error toggling featured:', error);
+                this.showNotification('Failed to update property. Please try again.', 'error');
+            }
         }
     }
 
-    updateContactStatus(contactId, status) {
-        const contact = this.contacts.find(c => c.id === contactId);
-        if (contact) {
-            contact.status = status;
-            contact.updatedAt = new Date().toISOString();
+    async updateContactStatus(contactId, status) {
+        try {
+            await window.api.updateContactStatus(contactId, status);
+            // Reload contacts from server
+            await this.loadDataFromServer();
+            this.renderContacts();
+            this.updateStats();
             this.showNotification('Contact status updated!', 'success');
+        } catch (error) {
+            console.error('Error updating contact status:', error);
+            this.showNotification('Failed to update contact status. Please try again.', 'error');
         }
     }
 
@@ -481,12 +529,19 @@ class AdminPanel {
         }
     }
 
-    deleteContact(contactId) {
+    async deleteContact(contactId) {
         if (confirm('Are you sure you want to delete this contact?')) {
-            this.contacts = this.contacts.filter(c => c.id !== contactId);
-            this.renderContacts();
-            this.updateStats();
-            this.showNotification('Contact deleted successfully!', 'success');
+            try {
+                await window.api.deleteContact(contactId);
+                // Reload contacts from server
+                await this.loadDataFromServer();
+                this.renderContacts();
+                this.updateStats();
+                this.showNotification('Contact deleted successfully!', 'success');
+            } catch (error) {
+                console.error('Error deleting contact:', error);
+                this.showNotification('Failed to delete contact. Please try again.', 'error');
+            }
         }
     }
 
