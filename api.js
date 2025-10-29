@@ -74,6 +74,13 @@ class ZameenKhojoAPI {
         localStorage.removeItem('adminUser');
     }
 
+    async changePassword({ oldPassword, newPassword }) {
+        return await this.request('/admin/change-password', {
+            method: 'POST',
+            body: JSON.stringify({ oldPassword, newPassword })
+        });
+    }
+
     isAdminLoggedIn() {
         return !!this.token;
     }

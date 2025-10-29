@@ -17,6 +17,7 @@ app.use(express.static(__dirname));
 // Data storage
 let properties = [];
 let contacts = [];
+let admin = { username: 'admin', email: 'admin@zameenkhojo.com', password: 'admin123' };
 
 // Load/Save functions
 const loadData = () => {
@@ -27,6 +28,9 @@ const loadData = () => {
         if (fs.existsSync('./data/contacts.json')) {
             contacts = JSON.parse(fs.readFileSync('./data/contacts.json', 'utf8'));
         }
+        if (fs.existsSync('./data/admin.json')) {
+            admin = JSON.parse(fs.readFileSync('./data/admin.json', 'utf8'));
+        }
     } catch (error) {
         console.log('Starting with empty data');
     }
@@ -36,6 +40,7 @@ const saveData = () => {
     if (!fs.existsSync('./data')) fs.mkdirSync('./data');
     fs.writeFileSync('./data/properties.json', JSON.stringify(properties, null, 2));
     fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts, null, 2));
+    fs.writeFileSync('./data/admin.json', JSON.stringify(admin, null, 2));
 };
 
 loadData();
@@ -55,15 +60,32 @@ const checkAuth = (req, res, next) => {
 // Admin login
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
-    if (username === 'admin' && password === 'admin123') {
+    if (username === admin.username && password === admin.password) {
         res.json({
             success: true,
             token: 'admin123',
-            user: { username: 'admin', email: 'admin@zameenkhojo.com' }
+            user: { username: admin.username, email: admin.email }
         });
     } else {
         res.status(401).json({ error: 'Invalid credentials' });
     }
+});
+
+// Admin: change password (verify old password)
+app.post('/api/admin/change-password', checkAuth, (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({ error: 'Missing fields' });
+    }
+    if (oldPassword !== admin.password) {
+        return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+    if (String(newPassword).length < 6) {
+        return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+    admin.password = String(newPassword);
+    saveData();
+    res.json({ success: true, message: 'Password updated successfully' });
 });
 
 // Get all properties
@@ -273,7 +295,7 @@ app.listen(PORT, () => {
     console.log(`   - http://localhost:${PORT}/styles.css`);
     console.log(`   - http://localhost:${PORT}/script.js`);
     console.log(`   - http://localhost:${PORT}/IMG_3352.jpg`);
-    console.log(`\n🔐 Admin: username=admin, password=admin123\n`);
+    console.log(`\n🔐 Admin: username=${admin.username}, password=${admin.password}\n`);
 });
 
 module.exports = app;

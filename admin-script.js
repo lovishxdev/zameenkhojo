@@ -19,6 +19,27 @@ class AdminPanel {
         // Login form
         document.getElementById('login-form')?.addEventListener('submit', this.handleLogin.bind(this));
 
+        // Change password UI
+        const toggleChange = document.getElementById('toggle-change-password');
+        const changeForm = document.getElementById('change-password-form');
+        const cancelChange = document.getElementById('cancel-change-password');
+        if (toggleChange && changeForm) {
+            toggleChange.addEventListener('click', (e) => {
+                e.preventDefault();
+                changeForm.style.display = changeForm.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        if (cancelChange && changeForm) {
+            cancelChange.addEventListener('click', (e) => {
+                e.preventDefault();
+                changeForm.reset();
+                changeForm.style.display = 'none';
+            });
+        }
+        if (changeForm) {
+            changeForm.addEventListener('submit', this.handleChangePassword.bind(this));
+        }
+
         // Logout button
         document.getElementById('logout-btn')?.addEventListener('click', this.handleLogout.bind(this));
 
@@ -76,6 +97,34 @@ class AdminPanel {
                 this.closeModal();
             }
         });
+    }
+
+    async handleChangePassword(e) {
+        e.preventDefault();
+        const oldPassword = document.getElementById('old-password').value.trim();
+        const newPassword = document.getElementById('new-password').value.trim();
+        const confirmPassword = document.getElementById('confirm-password').value.trim();
+
+        if (!oldPassword || !newPassword) {
+            return this.showNotification('Please fill all fields', 'error');
+        }
+        if (newPassword.length < 6) {
+            return this.showNotification('New password must be at least 6 characters', 'error');
+        }
+        if (newPassword !== confirmPassword) {
+            return this.showNotification('New passwords do not match', 'error');
+        }
+
+        try {
+            const res = await window.api.changePassword({ oldPassword, newPassword });
+            if (res.success) {
+                this.showNotification('Password updated successfully', 'success');
+                document.getElementById('change-password-form').reset();
+                document.getElementById('change-password-form').style.display = 'none';
+            }
+        } catch (err) {
+            this.showNotification(err.message || 'Failed to update password', 'error');
+        }
     }
 
     async checkLoginStatus() {
