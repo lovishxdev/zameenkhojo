@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
+const crypto = require('crypto');
 const PORT = 3000;
 
 // Middleware - ORDER MATTERS!
@@ -18,6 +19,7 @@ app.use(express.static(__dirname));
 let properties = [];
 let contacts = [];
 let admin = { username: 'admin', email: 'admin@zameenkhojo.com', password: 'admin123' };
+let currentToken = null;
 
 // Load/Save functions
 const loadData = () => {
@@ -47,8 +49,9 @@ loadData();
 
 // Simple auth middleware
 const checkAuth = (req, res, next) => {
-    const auth = req.headers.authorization;
-    if (auth === 'Bearer admin123') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    if (token && token === currentToken) {
         next();
     } else {
         res.status(401).json({ error: 'Unauthorized' });
@@ -61,9 +64,11 @@ const checkAuth = (req, res, next) => {
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     if (username === admin.username && password === admin.password) {
+        // generate a fresh token per login
+        currentToken = crypto.randomBytes(24).toString('hex');
         res.json({
             success: true,
-            token: 'admin123',
+            token: currentToken,
             user: { username: admin.username, email: admin.email }
         });
     } else {
@@ -71,8 +76,8 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// Admin: change password (verify old password)
-app.post('/api/admin/change-password', checkAuth, (req, res) => {
+// Admin: change password (verify old password) - allowed before login by verifying current password
+app.post('/api/admin/change-password', (req, res) => {
     const { oldPassword, newPassword } = req.body;
     if (!oldPassword || !newPassword) {
         return res.status(400).json({ error: 'Missing fields' });

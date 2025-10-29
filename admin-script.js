@@ -11,6 +11,14 @@ class AdminPanel {
     }
 
     async init() {
+        // Ensure login is shown and dashboard is hidden on load
+        document.getElementById('login-section')?.setAttribute('style', 'display:flex');
+        document.getElementById('admin-dashboard')?.classList.add('hidden');
+        document.getElementById('logout-btn')?.setAttribute('style', 'display:none');
+
+        // Force-hide any modals on load
+        document.querySelectorAll('.modal').forEach(m => (m.style.display = 'none'));
+
         this.setupEventListeners();
         await this.checkLoginStatus();
     }
@@ -18,6 +26,23 @@ class AdminPanel {
     setupEventListeners() {
         // Login form
         document.getElementById('login-form')?.addEventListener('submit', this.handleLogin.bind(this));
+
+        // Mark input-groups that have a toggle to ensure proper padding
+        document.querySelectorAll('.input-group').forEach(group => {
+            if (group.querySelector('.toggle-password')) group.classList.add('has-toggle');
+        });
+
+        // Toggle password visibility (event delegation ensures it works even if DOM updates)
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.toggle-password');
+            if (!btn) return;
+            const targetId = btn.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            btn.innerHTML = isPassword ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+        });
 
         // Change password UI
         const toggleChange = document.getElementById('toggle-change-password');
@@ -116,12 +141,28 @@ class AdminPanel {
         }
 
         try {
-            const res = await window.api.changePassword({ oldPassword, newPassword });
-            if (res.success) {
-                this.showNotification('Password updated successfully', 'success');
-                document.getElementById('change-password-form').reset();
-                document.getElementById('change-password-form').style.display = 'none';
+            const response = await fetch(`${window.api.baseURL}/admin/change-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+
+            let payload = null;
+            try {
+                payload = await response.json();
+            } catch (_) {
+                // Non-JSON response
+                throw new Error('Unexpected response');
             }
+
+            if (!response.ok || !payload || payload.success !== true) {
+                throw new Error((payload && payload.error) || 'Failed to update password');
+            }
+
+            this.showNotification('Password updated successfully', 'success');
+            const form = document.getElementById('change-password-form');
+            form.reset();
+            form.style.display = 'none';
         } catch (err) {
             this.showNotification(err.message || 'Failed to update password', 'error');
         }

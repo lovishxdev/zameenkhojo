@@ -1973,7 +1973,7 @@ section {
     width: 100%;
 }
 
-.input-group i {
+.input-group i.input-icon {
     position: absolute;
     left: 16px;
     top: 50%;
@@ -2002,6 +2002,33 @@ section {
     border-color: var(--primary-orange);
     box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
 }
+
+/* Password visibility toggle placed on the right side */
+.toggle-password {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--dark-gray);
+    cursor: pointer;
+    padding: 6px;
+    z-index: 11;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.toggle-password i {
+    font-size: 16px;
+}
+
+/* Ensure padding-right when toggle is present */
+/* Fallback for browsers without :has support */
+.input-group.has-toggle input { padding-right: 56px !important; }
 
 
 .login-btn {
