@@ -243,9 +243,27 @@ class ZameenKhojoApp {
         const hamburger = document.querySelector('.hamburger');
         const navMenu = document.querySelector('.nav-menu');
 
+        const navBackdrop = document.querySelector('.nav-backdrop');
+        
         hamburger?.addEventListener('click', () => {
+            const isActive = hamburger.classList.contains('active');
             hamburger.classList.toggle('active');
             navMenu.classList.toggle('active');
+            // Toggle backdrop
+            if (navBackdrop) {
+                if (isActive) {
+                    navBackdrop.classList.remove('active');
+                } else {
+                    navBackdrop.classList.add('active');
+                }
+            }
+        });
+        
+        // Close menu when clicking backdrop
+        navBackdrop?.addEventListener('click', () => {
+            hamburger?.classList.remove('active');
+            navMenu?.classList.remove('active');
+            navBackdrop.classList.remove('active');
         });
 
         // Close mobile menu when clicking on links
@@ -253,6 +271,7 @@ class ZameenKhojoApp {
             link.addEventListener('click', () => {
                 hamburger?.classList.remove('active');
                 navMenu?.classList.remove('active');
+                navBackdrop?.classList.remove('active');
             });
         });
 
@@ -261,6 +280,7 @@ class ZameenKhojoApp {
             if (e.target.tagName === 'DIV' && e.target.textContent === '✕') {
                 hamburger?.classList.remove('active');
                 navMenu?.classList.remove('active');
+                navBackdrop?.classList.remove('active');
             }
         });
 
@@ -268,9 +288,11 @@ class ZameenKhojoApp {
         document.addEventListener('click', (e) => {
             if (navMenu?.classList.contains('active') && 
                 !navMenu.contains(e.target) && 
-                !hamburger?.contains(e.target)) {
+                !hamburger?.contains(e.target) &&
+                !navBackdrop?.contains(e.target)) {
                 hamburger?.classList.remove('active');
                 navMenu?.classList.remove('active');
+                navBackdrop?.classList.remove('active');
             }
         });
 
@@ -279,6 +301,7 @@ class ZameenKhojoApp {
             if (e.key === 'Escape' && navMenu?.classList.contains('active')) {
                 hamburger?.classList.remove('active');
                 navMenu?.classList.remove('active');
+                navBackdrop?.classList.remove('active');
             }
         });
 
@@ -308,21 +331,10 @@ class ZameenKhojoApp {
             this.applyFilters();
         });
 
-        // Modal close functionality
-        document.querySelectorAll('.modal-close').forEach(close => {
-            close.addEventListener('click', this.closeModal);
-        });
-
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) this.closeModal();
-            });
-        });
-
         // Escape key to close modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                this.closeModal();
+                this.closePropertyModal();
             }
         });
     }
@@ -535,23 +547,46 @@ class ZameenKhojoApp {
         const property = this.properties.find(p => p.id === propertyId);
         if (!property) return;
 
-        const modal = document.getElementById('property-modal');
-        const detailsContainer = document.getElementById('property-details');
+        // Remove existing modal if any
+        const existingOverlay = document.getElementById('property-modal-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
         const images = Array.isArray(property.images) ? property.images.filter(img => !!img) : [];
         const mainImageSrc = images[0] || 'https://via.placeholder.com/800x600?text=No+Image';
 
-        detailsContainer.innerHTML = `
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'property-modal-overlay';
+        overlay.className = 'property-modal-overlay';
+
+        // Create modal card
+        const modalCard = document.createElement('div');
+        modalCard.className = 'property-modal-card';
+
+        // Create close button
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'property-modal-close';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.onclick = () => this.closePropertyModal();
+
+        // Create modal body
+        const modalBody = document.createElement('div');
+        modalBody.className = 'property-modal-body';
+        modalBody.innerHTML = `
             <div class="property-modal-content">
                 <div class="property-gallery">
                     <div class="main-image">
-                        <img src="${mainImageSrc}" alt="${property.title}" id="main-property-image">
+                        <img src="${mainImageSrc}" alt="${property.title}" id="main-property-image" onerror="this.src='https://via.placeholder.com/800x600?text=No+Image'">
                     </div>
                     ${images.length > 1 ? `
                         <div class="thumbnail-images">
                             ${images.map((img, index) => `
                                 <img src="${img}" alt="${property.title} ${index + 1}" 
                                      class="thumbnail ${index === 0 ? 'active' : ''}"
-                                     onclick="app.switchPropertyImage('${img}', this)">
+                                     onclick="app.switchPropertyImage('${img}', this)"
+                                     onerror="this.style.display='none'">
                             `).join('')}
                         </div>
                     ` : ''}
@@ -579,6 +614,7 @@ class ZameenKhojoApp {
                         <p>${property.description}</p>
                     </div>
 
+                    ${Array.isArray(property.amenities) && property.amenities.length > 0 ? `
                     <div class="property-amenities-section">
                         <h3>Amenities</h3>
                         <div class="amenities-list">
@@ -590,6 +626,7 @@ class ZameenKhojoApp {
                             `).join('')}
                         </div>
                     </div>
+                    ` : ''}
 
                     <div class="property-actions">
                         <button class="btn btn-primary" onclick="app.contactAboutProperty(${property.id})">
@@ -605,17 +642,38 @@ class ZameenKhojoApp {
             </div>
         `;
 
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-        
-        // Ensure modal is vertically centered
-        setTimeout(() => {
-            const modalContent = modal.querySelector('.modal-content');
-            if (modalContent) {
-                // Scroll modal to center if content is tall
-                modal.scrollTop = (modal.scrollHeight - modal.clientHeight) / 2;
+        // Assemble modal
+        modalCard.appendChild(closeBtn);
+        modalCard.appendChild(modalBody);
+        overlay.appendChild(modalCard);
+
+        // Add to body
+        document.body.appendChild(overlay);
+
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                this.closePropertyModal();
             }
+        });
+
+        // Show modal with animation
+        setTimeout(() => {
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }, 10);
+    }
+
+    // Close Property Modal
+    closePropertyModal() {
+        const overlay = document.getElementById('property-modal-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                overlay.remove();
+            }, 300);
+        }
     }
 
     // Switch Property Image
@@ -639,7 +697,7 @@ class ZameenKhojoApp {
         const whatsappUrl = `https://wa.me/${this.agent.whatsappNumber}?text=${message}`;
 
         window.open(whatsappUrl, '_blank');
-        this.closeModal();
+        this.closePropertyModal();
     }
 
     // Schedule Viewing
@@ -653,15 +711,7 @@ class ZameenKhojoApp {
         const whatsappUrl = `https://wa.me/${this.agent.whatsappNumber}?text=${message}`;
 
         window.open(whatsappUrl, '_blank');
-        this.closeModal();
-    }
-
-    // Close Modal
-    closeModal() {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.classList.remove('show');
-        });
-        document.body.style.overflow = 'auto';
+        this.closePropertyModal();
     }
 
     // Update Agent Info
