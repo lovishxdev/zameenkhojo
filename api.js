@@ -11,7 +11,7 @@ class ZameenKhojoAPI {
             // In local dev use localhost, otherwise point to production API (replace with your Render URL)
             this.baseURL = isLocal
                 ? 'http://localhost:3000/api'
-                : 'https://YOUR-RENDER-APP.onrender.com/api';
+                : 'https://zameenkhojo.com/api';
         }
         this.token = localStorage.getItem('adminToken');
     }
