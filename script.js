@@ -406,12 +406,20 @@ class ZameenKhojoApp {
 
     // WhatsApp Setup
     setupWhatsApp() {
-        const whatsappBtn = document.getElementById('whatsapp-btn');
+        const whatsappBtn1 = document.getElementById('whatsapp-btn1');
+        const whatsappBtn2 = document.getElementById('whatsapp-btn2');
 
         console.log("WhatsApp Button");
-        console.log(whatsappBtn);
-        if (whatsappBtn) {
-            whatsappBtn.addEventListener('click', () => {
+        console.log(whatsappBtn1);
+        if (whatsappBtn1 && whatsappBtn2) {
+            whatsappBtn1.addEventListener('click', () => {
+                const message = encodeURIComponent(
+                    `Hi ${this.agent.name}, I'm interested in your real estate services. Could you please provide me with more information?`
+                );
+                const whatsappUrl = `https://wa.me/${this.agent.whatsappNumber}?text=${message}`;
+                window.open(whatsappUrl, '_blank');
+            });
+            whatsappBtn2.addEventListener('click', () => {
                 const message = encodeURIComponent(
                     `Hi ${this.agent.name}, I'm interested in your real estate services. Could you please provide me with more information?`
                 );
