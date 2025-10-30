@@ -1,7 +1,18 @@
 // API Integration for ZameenKhojo Frontend
 class ZameenKhojoAPI {
     constructor() {
-        this.baseURL = 'http://localhost:3000/api';
+        // Determine API base URL
+        if (typeof window !== 'undefined' && window.API_BASE_URL) {
+            // Allow explicit override from the page
+            this.baseURL = String(window.API_BASE_URL).replace(/\/$/, '');
+        } else {
+            const hostname = (typeof location !== 'undefined' && location.hostname) ? location.hostname : '';
+            const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+            // In local dev use localhost, otherwise point to production API (replace with your Render URL)
+            this.baseURL = isLocal
+                ? 'http://localhost:3000/api'
+                : 'https://YOUR-RENDER-APP.onrender.com/api';
+        }
         this.token = localStorage.getItem('adminToken');
     }
 
