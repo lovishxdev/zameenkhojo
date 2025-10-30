@@ -408,6 +408,8 @@ class ZameenKhojoApp {
     setupWhatsApp() {
         const whatsappBtn = document.getElementById('whatsapp-btn');
 
+        console.log("WhatsApp Button");
+        console.log(whatsappBtn);
         if (whatsappBtn) {
             whatsappBtn.addEventListener('click', () => {
                 const message = encodeURIComponent(
