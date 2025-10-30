@@ -21,6 +21,19 @@ let contacts = [];
 let admin = { username: 'admin', email: 'admin@zameenkhojo.com', password: 'admin123' };
 let currentToken = null;
 
+// Allow overriding admin credentials via environment variables (for deployments like Render)
+const envAdmin = {
+    username: process.env.ADMIN_USERNAME,
+    email: process.env.ADMIN_EMAIL,
+    password: process.env.ADMIN_PASSWORD
+};
+const adminFromEnv = !!(envAdmin.username && envAdmin.password);
+if (adminFromEnv) {
+    admin.username = envAdmin.username;
+    admin.email = envAdmin.email || admin.email;
+    admin.password = envAdmin.password;
+}
+
 // Load/Save functions
 const loadData = () => {
     try {
@@ -30,7 +43,8 @@ const loadData = () => {
         if (fs.existsSync('./data/contacts.json')) {
             contacts = JSON.parse(fs.readFileSync('./data/contacts.json', 'utf8'));
         }
-        if (fs.existsSync('./data/admin.json')) {
+        // Only load admin from disk if not supplied via environment variables
+        if (!adminFromEnv && fs.existsSync('./data/admin.json')) {
             admin = JSON.parse(fs.readFileSync('./data/admin.json', 'utf8'));
         }
     } catch (error) {
@@ -42,7 +56,10 @@ const saveData = () => {
     if (!fs.existsSync('./data')) fs.mkdirSync('./data');
     fs.writeFileSync('./data/properties.json', JSON.stringify(properties, null, 2));
     fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts, null, 2));
-    fs.writeFileSync('./data/admin.json', JSON.stringify(admin, null, 2));
+    // Avoid writing admin credentials to disk if configured via environment
+    if (!adminFromEnv) {
+        fs.writeFileSync('./data/admin.json', JSON.stringify(admin, null, 2));
+    }
 };
 
 loadData();
@@ -300,7 +317,12 @@ app.listen(PORT, () => {
     console.log(`   - http://localhost:${PORT}/styles.css`);
     console.log(`   - http://localhost:${PORT}/script.js`);
     console.log(`   - http://localhost:${PORT}/IMG_3352.jpg`);
-    console.log(`\n🔐 Admin: username=${admin.username}, password=${admin.password}\n`);
+    const isProd = process.env.NODE_ENV === 'production';
+    if (!isProd) {
+        console.log(`\n🔐 Admin: username=${admin.username}, password=${admin.password}\n`);
+    } else {
+        console.log(`\n🔐 Admin configured. username=${admin.username} (password hidden)\n`);
+    }
 });
 
 module.exports = app;
